@@ -4,6 +4,8 @@
 ESP8266WebServer server(80);
 
 const char id[] = "AuraHub_27d435b37a58";
+bool setupIsRunning = false;
+bool accesPointIsRunning = false;
 
 struct settings
 {
@@ -14,6 +16,8 @@ struct settings
 
 void setup_wifi()
 {
+    setupIsRunning = true;
+    accesPointIsRunning = false;
     delay(100);
 
     // Turn on wifi and try to connect with credentials from EEPROM
@@ -35,6 +39,7 @@ void setup_wifi()
         // If not connected after 15 seconds, run access point, turn on LED and break from while loop
         if (tries++ > 15)
         {
+            accesPointIsRunning = true;
             Serial.println("");
             Serial.println("Starting Access Point Mode");
             digitalWrite(BUILTIN_LED, LOW);
@@ -59,6 +64,8 @@ void setup_wifi()
     // Turn on web server and wait
     server.on("/", handlePortal);
     server.begin();
+
+    setupIsRunning = false;
 }
 
 void setup()
@@ -71,6 +78,12 @@ void setup()
     EEPROM.begin(sizeof(struct settings));
     EEPROM.get(0, user_wifi);
 
+    // Setup access point config
+    IPAddress localIP(192, 168, 1, 1);
+    IPAddress gateway(192, 168, 1, 0);
+    IPAddress subnet(255, 255, 255, 0);
+    WiFi.softAPConfig(localIP, gateway, subnet);
+
     setup_wifi();
 }
 
@@ -82,7 +95,10 @@ void loop()
     // If not connected to wifi run wifi setup sequence
     if (WiFi.status() != WL_CONNECTED)
     {
-        setup_wifi();
+        if (setupIsRunning == false && accesPointIsRunning == false)
+        {
+            setup_wifi();
+        }
     }
 }
 
