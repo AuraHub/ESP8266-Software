@@ -87,14 +87,58 @@ void setup_wifi()
         Serial.println(WiFi.localIP());
         digitalWrite(BUILTIN_LED, HIGH);
 
+        // Set basic mqtt settings
         client.setServer(mqtt_server, mqtt_port);
         client.setCallback(mqttCallback);
-        client.connect(id);
-        client.subscribe(id);
-        client.subscribe("ping");
+
+        // Run mqtt setup
+        setup_mqtt();
     }
 
     setupIsRunning = false;
+}
+
+void setup_mqtt()
+{
+  // Loop until we're connected
+  while (!client.connected())
+  {
+    Serial.println("Attempting MQTT connection...");
+
+    // Attempt to connect
+    if (client.connect(id))
+    {
+      Serial.println("Connected to broker");
+      client.subscribe(id);
+      client.subscribe("ping");
+
+      digitalWrite(BUILTIN_LED, LOW);
+      delay(10);
+      digitalWrite(BUILTIN_LED, HIGH);
+      delay(70);
+      digitalWrite(BUILTIN_LED, LOW);
+      delay(10);
+      digitalWrite(BUILTIN_LED, HIGH);
+      delay(70);
+      digitalWrite(BUILTIN_LED, LOW);
+      delay(10);
+      digitalWrite(BUILTIN_LED, HIGH);
+    }
+    else
+    {
+      Serial.print("Connection failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 3 seconds");
+      // Wait 3 seconds before retrying
+      for (int i = 0; i < 6; i++)
+      {
+        digitalWrite(BUILTIN_LED, HIGH);
+        delay(450);
+        digitalWrite(BUILTIN_LED, LOW);
+        delay(50);
+      }
+    }
+  }
 }
 
 void setup()
@@ -126,6 +170,12 @@ void loop()
         {
             setup_wifi();
         }
+    }
+
+    // If not connected to mqtt broker run setup sequence
+    if (!client.connected())
+    {
+      setup_mqtt();
     }
 
     client.loop();
