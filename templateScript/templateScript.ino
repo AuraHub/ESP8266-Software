@@ -11,9 +11,10 @@ DNSServer dnsServer;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
-const char id[] = ID;
+const char *id = ID;
 const char *mqtt_server = BROKER_IP;
 const int mqtt_port = BROKER_PORT;
+const char *attributes = ATTRIBUTES;
 
 bool setupIsRunning = false;
 bool accesPointIsRunning = false;
@@ -111,6 +112,14 @@ void setup_mqtt()
       Serial.println("Connected to broker");
       client.subscribe(id);
       client.subscribe("ping");
+
+      Serial.println("Sending setup");
+      String message = "{\"deviceId\": \"";
+      message += id;
+      message += "\", \"attributes\":";
+      message += attributes;
+      message += "}";
+      client.publish("setup", message.c_str());
 
       digitalWrite(BUILTIN_LED, LOW);
       delay(10);
