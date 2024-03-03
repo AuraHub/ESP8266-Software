@@ -13,7 +13,7 @@ PubSubClient client(espClient);
 
 const char id[] = ID;
 const char *mqtt_server = BROKER_IP;
-int mqtt_port = BROKER_PORT;
+const int mqtt_port = BROKER_PORT;
 
 bool setupIsRunning = false;
 bool accesPointIsRunning = false;
@@ -219,4 +219,13 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
   String strPayload = String((char *)payload);
   Serial.print(strPayload);
   Serial.println();
+
+  if (strcmp(topic, "ping") == 0){
+    Serial.println("Returning ping");
+    String message = "{\"deviceId\": \"";
+    message += id;
+    message += "\"}";
+    client.publish("returnPing", message.c_str());
+  }
+  
 }
