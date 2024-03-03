@@ -2,10 +2,14 @@
 #include <ESP8266WebServer.h>
 #include <EEPROM.h>
 #include <DNSServer.h>
+#include <PubSubClient.h>
 #include "Credentials.h"
 
 ESP8266WebServer server(80);
 DNSServer dnsServer;
+
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 const char id[] = ID;
 const char *mqtt_server = BROKER_IP;
@@ -82,6 +86,12 @@ void setup_wifi()
         Serial.println("IP address: ");
         Serial.println(WiFi.localIP());
         digitalWrite(BUILTIN_LED, HIGH);
+
+        client.setServer(mqtt_server, mqtt_port);
+        client.setCallback(mqttCallback);
+        client.connect(id);
+        client.subscribe(id);
+        client.subscribe("ping");
     }
 
     setupIsRunning = false;
@@ -117,6 +127,8 @@ void loop()
             setup_wifi();
         }
     }
+
+    client.loop();
 }
 
 void handlePost()
@@ -145,4 +157,16 @@ void handleForm()
 void handleSuccess()
 {
     server.send(200, "text/html", "<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Wifi Setup Success</title><style>*,::after,::before{box-sizing:border-box;}body{margin:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans','Liberation Sans';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#f5f5f5;}.form-control{display:block;width:100%;height:calc(1.5em + .75rem + 2px);border:1px solid #ced4da;}button{border:1px solid transparent;color:#fff;background-color:#007bff;border-color:#007bff;padding:.5rem 1rem;font-size:1.25rem;line-height:1.5;border-radius:.3rem;width:100%}.form-signin{width:100%;max-width:400px;padding:15px;margin:auto;}h1,p{text-align: center}</style> </head> <body><main class='form-signin'> <h1>Wifi Setup Success</h1> <br/> <p>Your settings have been saved successfully!</main></body></html>");
+}
+
+void mqttCallback(char *topic, byte *payload, unsigned int length)
+{
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+
+  payload[length] = '\0';
+  String strPayload = String((char *)payload);
+  Serial.print(strPayload);
+  Serial.println();
 }
