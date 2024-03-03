@@ -2,11 +2,15 @@
 #include <ESP8266WebServer.h>
 #include <EEPROM.h>
 #include <DNSServer.h>
+#include "Credentials.h"
 
 ESP8266WebServer server(80);
 DNSServer dnsServer;
 
-const char id[] = "AuraHub_27d435b37a58";
+const char id[] = ID;
+const char *mqtt_server = BROKER_IP;
+int mqtt_port = BROKER_PORT;
+
 bool setupIsRunning = false;
 bool accesPointIsRunning = false;
 
