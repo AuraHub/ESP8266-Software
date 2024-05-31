@@ -3,6 +3,7 @@
 #include <EEPROM.h>
 #include <DNSServer.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 #include "Credentials.h"
 
 ESP8266WebServer server(80);
@@ -15,6 +16,8 @@ const char *id = ID;
 const char *mqtt_server = BROKER_IP;
 const int mqtt_port = BROKER_PORT;
 const char *attributes = ATTRIBUTES;
+
+const int relay_pin = RELAY_PIN;
 
 bool setupIsRunning = false;
 bool accesPointIsRunning = false;
@@ -154,6 +157,7 @@ void setup()
 {
     // Initializing BUILTIN_LED and serial
     pinMode(BUILTIN_LED, OUTPUT);
+    pinMode(relay_pin, OUTPUT);
     Serial.begin(115200);
 
     // Start EEPROM and retrive data
@@ -235,6 +239,18 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
     message += id;
     message += "\"}";
     client.publish("returnPing", message.c_str());
+  } else if (strcmp(topic, id) == 0){
+    DynamicJsonDocument doc(512);
+    deserializeJson(doc, strPayload); // deserialize JSON message to DynamicJsonDocument
+
+  if (strcmp( doc[0]["Value"], "true") == 0)
+    {
+      digitalWrite(relay_pin, LOW);
+    }
+    else
+    {
+      digitalWrite(relay_pin, HIGH);
+    }
   }
   
 }
