@@ -1,12 +1,25 @@
 #include "ConnectionsSetup.h"
 #include "CallbackHandler.h"
 #include "Credentials.h"
+#include "CallbackOnOff.h"
+#include "CallbackPing.h"
+
+CallbackHandler callbackHandler;
 
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(RELAY_PIN, OUTPUT);
   Serial.begin(115200);
+
+  callbackHandler.registerCallback(new CallbackOnOff("AuraHub_bc4937f37619|OnOff", RELAY_PIN));
+  callbackHandler.registerCallback(new CallbackPing("Ping"));
+
+  // Set global MQTT callback
+  client.setCallback([](char *topic, byte *payload, unsigned int length)
+                     { callbackHandler.handleCallback(topic, payload, length); });
+
+  // Set up all devices
+  callbackHandler.setupAll();
 
   // Initialize EEPROM
   EEPROM.begin(sizeof(struct settings));
@@ -16,12 +29,6 @@ void setup()
   WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
 
   setup_wifi();
-
-  registerDevice("ping", callbackPing);
-  registerDevice("AuraHub_bc4937f37619|OnOff", callbackOnOff);
-
-  // Set the global callback for the MQTT client
-  client.setCallback(handleCallback);
 }
 
 void loop()
@@ -43,4 +50,5 @@ void loop()
   }
 
   client.loop();
+  callbackHandler.loopAll();
 }

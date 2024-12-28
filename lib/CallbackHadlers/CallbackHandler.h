@@ -1,26 +1,46 @@
-#ifndef CALLBACKHANDLER_H
-#define CALLBACKHANDLER_H
-
+#pragma once
+#include <vector>
 #include <PubSubClient.h>
+#include "Callback.h"
 extern PubSubClient client;
 extern const char *id;
-
-// Define the callback types for different handlers
-typedef void (*CallbackFunction)(char *topic, byte *payload, unsigned int length);
-
-// Structure to map devices to their callback functions
-struct DeviceHandler
+class CallbackHandler
 {
-  const char *topic;
-  CallbackFunction callback;
+private:
+  std::vector<Callback *> callbacks;
+
+public:
+  void registerCallback(Callback *callback)
+  {
+    callbacks.push_back(callback);
+  }
+
+  void setupAll()
+  {
+    for (Callback *callback : callbacks)
+    {
+      callback->setup();
+    }
+  }
+
+  void loopAll()
+  {
+    for (Callback *callback : callbacks)
+    {
+      callback->loop();
+    }
+  }
+
+  void handleCallback(char *topic, byte *payload, unsigned int length)
+  {
+    for (Callback *callback : callbacks)
+    {
+      if (strcmp(topic, callback->getTopic()) == 0)
+      {
+        callback->handle(topic, payload, length);
+        return;
+      }
+    }
+    Serial.println("Unhandled topic: " + String(topic));
+  }
 };
-
-// Function to register a device and its callback
-void registerDevice(const char *topic, CallbackFunction callback);
-
-// Function to handle the callback for a specific topic
-void handleCallback(char *topic, byte *payload, unsigned int length);
-void callbackPing(char *topic, byte *payload, unsigned int length);
-void callbackOnOff(char *topic, byte *payload, unsigned int length);
-
-#endif

@@ -3,4 +3,4 @@
 #define BROKER_PORT 3202
 #define ATTRIBUTES {"OnOff"}
 
-#define RELAY_PIN 14
+#define RELAY_PIN D1
