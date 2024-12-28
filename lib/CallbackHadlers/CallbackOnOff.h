@@ -15,7 +15,11 @@ public:
   void setup() override
   {
     pinMode(relayPin, OUTPUT);
-    digitalWrite(relayPin, HIGH);
+    digitalWrite(relayPin, HIGH); // Default to off
+  }
+
+  void loop() override
+  {
   }
 
   void handle(char *topic, byte *payload, unsigned int length) override

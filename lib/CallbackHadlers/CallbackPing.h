@@ -12,6 +12,13 @@ public:
   CallbackPing(const char *topic)
       : topic(topic) {}
 
+  void setup() override
+  {
+  }
+  void loop() override
+  {
+  }
+
   void handle(char *topic, byte *payload, unsigned int length) override
   {
     Serial.println("Returning ping");

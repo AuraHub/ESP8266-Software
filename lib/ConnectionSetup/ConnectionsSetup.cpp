@@ -11,6 +11,7 @@ const char *id = ID;
 const char *mqtt_server = BROKER_IP;
 const int mqtt_port = BROKER_PORT;
 const char *attributes[] = ATTRIBUTES;
+const char *trigers[] = TRIGERS;
 
 bool setupIsRunning = false;
 bool accesPointIsRunning = false;
@@ -104,7 +105,7 @@ void setup_mqtt()
       }
       client.subscribe(id);
 
-      Serial.println("Sending setup message");
+      Serial.println("Sending setupDevice message");
       String message = "{\"deviceId\": \"";
       message += id;
       message += "\", \"attributes\":[";
@@ -118,6 +119,21 @@ void setup_mqtt()
       }
       message += "]}";
       client.publish("setupDevice", message.c_str());
+
+      Serial.println("Sending setupDeviceTrigger message");
+      message = "{\"deviceId\": \"";
+      message += id;
+      message += "\", \"triggers\":[";
+      for (size_t i = 0; i < sizeof(trigers) / sizeof(trigers[0]); ++i)
+      {
+        message += "\"" + String(trigers[i]) + "\"";
+        if (i < (sizeof(trigers) / sizeof(trigers[0]) - 1))
+        {
+          message += ",";
+        }
+      }
+      message += "]}";
+      client.publish("setupDeviceTrigger", message.c_str());
 
       // Flash LED to indicate success
       for (int i = 0; i < 3; i++)
