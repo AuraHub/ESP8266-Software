@@ -6,6 +6,7 @@
 #include "CallbackPing.h"
 #include "TriggerManager.h"
 #include "ButtonTrigger.h"
+#include "SwitchTrigger.h"
 
 CallbackHandler callbackHandler;
 TriggerManager triggerManager;
@@ -26,7 +27,8 @@ void setup()
   callbackHandler.setupAll();
 
   // Set up all triggers
-  triggerManager.registerTrigger(new ButtonTrigger(BUTTON_PIN));
+  // triggerManager.registerTrigger(new ButtonTrigger(BUTTON_PIN));
+  triggerManager.registerTrigger(new SwitchTrigger(SWITCH_PIN));
   triggerManager.setupAll();
 
   // Initialize EEPROM

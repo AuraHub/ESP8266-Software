@@ -2,7 +2,9 @@
 #define BROKER_IP "192.168.1.7"
 #define BROKER_PORT 3202
 #define ATTRIBUTES {"OnOff"}
-#define TRIGERS {"Click", "Hold"}
+// #define TRIGERS {"Click", "Hold"}
+#define TRIGERS {"SwitchOn", "SwitchOff"}
 
 #define RELAY_PIN D1
 #define BUTTON_PIN D5
+#define SWITCH_PIN D6
